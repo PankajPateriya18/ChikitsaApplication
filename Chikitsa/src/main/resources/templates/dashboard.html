@@ -1,0 +1,109 @@
+<!-- ✅ dashboard.html -->
+<div th:fragment="content">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"/>
+
+    <!-- ✅ Bootstrap Icons CDN -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"/>
+
+    <style>
+        body {
+            background-color: #f6faff;
+        }
+
+        .dashboard-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .card-option {
+            border-radius: 12px;
+            transition: 0.3s;
+            cursor: pointer;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-option:hover {
+            transform: translateY(-5px);
+            background: #007bff;
+            color: white;
+        }
+
+        .card-option i {
+            font-size: 45px;
+            margin-bottom: 12px;
+        }
+
+        .grid-container {
+            margin-top: 40px;
+        }
+    </style>
+
+    <div class="container mt-5">
+        <h2 class="dashboard-title text-center"><span><h1 class="google-logo">
+		        <span style="color:#4285F4;">C</span>
+		        <span style="color:#DB4437;">H</span>
+		        <span style="color:#F4B400;">I</span>
+		        <span style="color:#4285F4;">K</span>
+		        <span style="color:#0F9D58;">I</span>
+		        <span style="color:#DB4437;">T</span>
+		        <span style="color:#F4B400;">S</span>
+		        <span style="color:#4285F4;">A</span>
+		    </h1></span> Dashboard</h2>
+
+        <div class="row grid-container justify-content-center">
+
+            <!-- ✅ All Patients -->
+            <div class="col-md-6 mb-4">
+                <a th:href="@{/patients}" style="text-decoration:none; color:inherit;">
+                    <div class="card-option">
+                        <i class="bi bi-people-fill"></i>
+                        <h4>All Patients</h4>
+                        <p>View list of patients</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- ✅ Add Patient -->
+            <div class="col-md-6 mb-4">
+                <a th:href="@{/addpatient}" style="text-decoration:none; color:inherit;">
+                    <div class="card-option">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <h4>Add Patient</h4>
+                        <p>Add a new patient record</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- ✅ Notes -->
+            <div class="col-md-6 mb-4">
+                <a th:href="@{/notes}" style="text-decoration:none; color:inherit;">
+                    <div class="card-option">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        <h4>Notes</h4>
+                        <p>View doctor's notes</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- ✅ Add Note -->
+            <div class="col-md-6 mb-4">
+                <a th:href="@{/addnote}" style="text-decoration:none; color:inherit;">
+                    <div class="card-option">
+                        <i class="bi bi-journal-plus"></i>
+                        <h4>Add Note</h4>
+                        <p>Add a new doctor note</p>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</div>

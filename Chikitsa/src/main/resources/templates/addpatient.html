@@ -1,0 +1,326 @@
+<div th:fragment="content">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"/>
+
+    <style>
+        body {
+            background-color: #f6faff;
+        }
+        .required-error {
+            border: 2px solid red !important;
+        }
+        .card {
+            border-radius: 10px;
+        }
+        
+        /* Remove number input arrows */
+		input[type=number]::-webkit-inner-spin-button,
+		input[type=number]::-webkit-outer-spin-button {
+		    -webkit-appearance: none;
+		    margin: 0;
+		}
+		
+		input[type=number] {
+		    -moz-appearance: textfield;
+		}
+    </style>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-6 col-md-7 col-sm-10 card shadow p-4 bg-white">
+
+            <h3 class="text-center mb-3">Patient Registration</h3>
+
+            <!-- Flash message -->
+            <div th:if="${message}" class="alert alert-success text-center">
+                <span th:text="${message}"></span>
+            </div>
+
+            <form id="patientForm" th:action="@{/savePatient}" th:object="${patient}" method="post" enctype="multipart/form-data">
+
+                <div class="mb-3">
+                    <label>Full Name *</label>
+                    <input type="text" th:field="*{fullName}"
+                           class="form-control required-field"
+                           placeholder="Enter Full Name"/>
+                </div>
+
+                <div class="mb-3">
+                    <label>Father's Name *</label>
+                    <input type="text" th:field="*{fatherName}"
+                           class="form-control required-field"
+                           placeholder="Enter Father's Name"/>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>Age *</label>
+                        <input type="number" th:field="*{age}"
+                               class="form-control required-field"
+                               placeholder="Age" min="1" max="100"/>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Sex *</label>
+                        <select th:field="*{sex}" class="form-select required-field">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Religion *</label>
+                        <select th:field="*{religion}" class="form-select required-field">
+                            <option value="Hindu">Hindu</option>
+                            <option value="Muslim">Muslim</option>
+                            <option value="Sikh">Sikh</option>
+                            <option value="Christian">Christian</option>
+                            <option value="Parsi">Parsi</option>
+                            <option value="Tribe">Tribe</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label>Diagnosis *</label>
+                    <textarea th:field="*{diagnosis}" rows="2"
+                              class="form-control required-field"
+                              placeholder="Enter Diagnosis"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label>Mobile *</label>
+                    <div class="input-group">
+                        <span class="input-group-text">+91</span>
+                        <input type="number" th:field="*{mobile}" class="form-control required-field"
+                               minlength="10"
+                               maxlength="10"
+                               oninput="validateMobile(this)"
+                               placeholder="Enter Mobile Number"/>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label>Email</label>
+                    <input type="email" th:field="*{email}"
+                           class="form-control"
+                           placeholder="Enter Email Address"/>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Address *</label>
+                    <textarea th:field="*{address}" rows="2"
+                              class="form-control required-field"
+                              placeholder="Enter Address"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Case Taking *</label>
+                    <textarea th:field="*{casetaking}" rows="4"
+                              class="form-control required-field"
+                              placeholder="Enter Case Taking"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Next Appointment</label>
+                    <input type="text" th:field="*{nextAppointment}"
+                           class="form-control"
+                           placeholder="Enter Next Appointment"/>
+                </div>
+                
+                <div class="mb-3">
+				    <label for="files">Documents</label>
+                    <input type="file" class="form-control" name="files" multiple>
+				</div>
+                
+                <div class="col-md-4">
+                    <label>Date *</label>
+                    <input type="date" th:field="*{date}" id="todayDate"
+                           class="form-control required-field" readonly/>
+                </div>
+
+                <div class="text-center mt-4">                      
+                    <button type="submit" class="btn btn-primary px-4">Submit</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JAVASCRIPT VALIDATION -->
+    <script>
+        // Auto-fill today's date
+        document.getElementById("todayDate").value = new Date().toISOString().split("T")[0];
+
+        /** Reset button should clear everything except date */
+        function clearExceptDate() {
+		    const dateVal = document.getElementById("todayDate").value;
+		    const regNoVal = document.querySelector("[name='registrationNumber']").value;
+		
+		    // Clear all inputs except date & registration number
+		    document.querySelectorAll("#patientForm input, #patientForm select, #patientForm textarea")
+		        .forEach(field => {
+		            if (field.id !== "todayDate" && field.name !== "registrationNumber") {
+		                if (field.type === "checkbox" || field.type === "radio") {
+		                    field.checked = false;
+		                } else {
+		                    field.value = "";
+		                }
+		            }
+		        });
+		
+		    // Remove required error red-border class
+		    document.querySelectorAll(".required-error")
+		        .forEach(el => el.classList.remove("required-error"));
+		
+		    // Restore values
+		    document.getElementById("todayDate").value = dateVal;
+		    document.querySelector("[name='registrationNumber']").value = regNoVal;
+		}
+		        		        
+
+        /** Submit validation */
+        document.getElementById("patientForm").addEventListener("submit", function (event) {
+            let isValid = true;
+
+            document.querySelectorAll(".required-field").forEach(field => {
+                if (!field.value || field.value.trim() === "") {
+                    field.classList.add("required-error");
+                    isValid = false;
+                } else {
+                    field.classList.remove("required-error");
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault();
+                alert("Please fill all required fields");
+            }
+        });
+
+        /** Restrict mobile to max 10 digits */
+        function validateMobile(input) {
+            if (input.value.length > 10) {
+                input.value = input.value.slice(0, 10);
+            }
+        }
+    </script>
+
+	<!-- Modal -->
+	<div class="modal fade" id="patientDocModal" tabindex="-1" aria-hidden="true">
+	  <div class="modal-dialog modal-lg">
+	    <div class="modal-content">
+	
+	      <div class="modal-header">
+	        <h5 class="modal-title">Patient Documents</h5>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+	      </div>
+	
+	      <div class="modal-body">
+	
+	        <!-- ✅ Success / Error message -->
+	        <div id="uploadMessage"></div>
+	
+	        <form id="uploadForm"
+			      th:action="@{/patient/{id}/uploadDocument(id=${patientId})}"
+			      method="post"
+			      enctype="multipart/form-data">
+			
+			    <input type="hidden" id="patientId" th:value="${patientId}">
+			
+			    <label for="fileUpload">Upload Document:</label>
+			    <input type="file" id="fileUpload" name="file"
+			           accept=".pdf,.doc,.docx"
+			           class="form-control mb-3"
+			           required>
+			
+			    <button type="submit" class="btn btn-success">Upload</button>
+			</form>
+
+	
+	        <hr>
+	
+	        <h5>Uploaded Documents</h5>
+	        <ul id="documentList"></ul>
+	      </div>
+	
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	      </div>
+	
+	    </div>
+	  </div>
+	</div>
+
+	
+	<script>
+
+		function openDocumentPopup(button) {
+		    const patientId = button.getAttribute("data-patient-id");
+		    document.getElementById("patientId").value = patientId;
+		    loadDocuments();
+		}
+		
+		// 🟢 Load existing docs
+		async function loadDocuments() {
+		    const patientId = document.getElementById('patientId').value;
+		    const documentList = document.getElementById('documentList');
+		    documentList.innerHTML = '<li>Loading...</li>';
+		
+		    const response = await fetch(`/api/patients/${patientId}/documents`);
+		    const docs = await response.json();
+		
+		    documentList.innerHTML = '';
+		
+		    if (docs.length === 0) {
+		        documentList.innerHTML = '<li>No documents uploaded yet.</li>';
+		        return;
+		    }
+		
+		    docs.forEach(doc => {
+		        const li = document.createElement('li');
+		        li.innerHTML = `📄 <a href="/files/${doc.filePath}" target="_blank">${doc.fileName}</a>`;
+		        documentList.appendChild(li);
+		    });
+		}
+		
+		
+		// 🟢 Handle upload
+		document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+		    e.preventDefault();
+		
+		    const patientId = document.getElementById('patientId').value;
+		    const fileInput = document.getElementById('fileUpload');
+		    const messageBox = document.getElementById('uploadMessage');
+		
+		    if (!fileInput.files[0]) return;
+		
+		    const formData = new FormData();
+		    formData.append("file", fileInput.files[0]);
+		
+		    const response = await fetch(`/api/patients/${patientId}/upload`, {
+		        method: "POST",
+		        body: formData
+		    });
+		
+		    if (response.ok) {
+		        messageBox.innerHTML =
+		            `<div class="alert alert-success">✅ File uploaded successfully!</div>`;
+		
+		        fileInput.value = '';
+		        loadDocuments();
+		    } else {
+		        messageBox.innerHTML =
+		            `<div class="alert alert-danger">❌ Upload failed. Try again.</div>`;
+		    }
+		});
+		
+	</script>
+		
+
+
+
+</div>

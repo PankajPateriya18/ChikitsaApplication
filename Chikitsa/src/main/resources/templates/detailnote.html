@@ -1,0 +1,45 @@
+<div th:fragment="content">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"/>
+
+    <style>
+        body {
+            background-color: #f6faff;
+        }
+        .card {
+            border-radius: 10px;
+        }
+        .readonly-box {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+        }
+    </style>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-5 col-md-7 col-sm-10 card shadow p-4 bg-white">
+
+			<div class="d-flex justify-content-between align-items-center mb-4">
+			    <a href="/notes" class="btn btn-secondary px-4">← Back</a>
+			    <h3 class="mx-auto mb-0">Details Note Page</h3>
+			    <span style="visibility:hidden;">.</span>
+			</div>
+            <div class="mb-3">
+                <label>Therapeutic</label>
+                <input type="text"
+                       th:value="${note.therapeutic}"
+                       class="form-control readonly-box"
+                       readonly/>
+            </div>
+
+            <div class="mb-3">
+                <label>Proven Therapeutic</label>
+                <textarea th:text="${note.provenTherapeutic}"
+                          rows="10"
+                          class="form-control readonly-box"
+                          readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+</div>

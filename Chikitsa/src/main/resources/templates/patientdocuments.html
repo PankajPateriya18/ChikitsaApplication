@@ -1,0 +1,76 @@
+<div id="patient-documents">
+  <h2>Patient Documents</h2>
+
+  <!-- Upload Form -->
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="hidden" id="patientId" value="1"> <!-- set dynamically if needed -->
+    
+    <label for="fileUpload">Upload Document (PDF, Word, etc.):</label>
+    <input type="file" id="fileUpload" name="file" accept=".pdf,.doc,.docx" required>
+    
+    <button type="submit">Upload</button>
+  </form>
+
+  <hr>
+
+  <!-- Uploaded Documents List -->
+  <h3>Uploaded Documents</h3>
+  <ul id="documentList">
+    <!-- dynamically filled -->
+  </ul>
+</div>
+
+<script>
+  const uploadForm = document.getElementById('uploadForm');
+  const patientId = document.getElementById('patientId').value;
+  const documentList = document.getElementById('documentList');
+
+  // 🟢 Fetch existing documents
+  async function loadDocuments() {
+    const response = await fetch(`/api/patients/${patientId}/documents`);
+    const docs = await response.json();
+    documentList.innerHTML = ''; // clear old list
+
+    if (docs.length === 0) {
+      documentList.innerHTML = '<li>No documents uploaded yet.</li>';
+      return;
+    }
+
+    docs.forEach(doc => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        📄 <a href="/files/${doc.filePath}" target="_blank">${doc.fileName}</a>
+      `;
+      documentList.appendChild(li);
+    });
+  }
+
+  // 🟢 Handle file upload
+  uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const fileInput = document.getElementById('fileUpload');
+    const file = fileInput.files[0];
+
+    if (!file) return alert('Please select a file!');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`/api/patients/${patientId}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (response.ok) {
+      alert('File uploaded successfully!');
+      fileInput.value = '';
+      loadDocuments();
+    } else {
+      alert('Upload failed!');
+    }
+  });
+
+  // Initial load
+  loadDocuments();
+</script>

@@ -1,0 +1,13 @@
+<div th:fragment="sidebarFragment" class="sidebar" style="width:260px;background:#0D1117;padding:20px;color:white;">
+
+    <a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard'} ? ' active' : ''">Dashboard</a>
+    <a th:href="@{/patients}" th:classappend="${activePage == 'patients'} ? ' active' : ''">Patients</a>
+    <a th:href="@{/addpatient}" th:classappend="${activePage == 'addpatient'} ? ' active' : ''">Add Patient</a>
+    <a th:href="@{/notes}" th:classappend="${activePage == 'notes'} ? ' active' : ''">Notes</a>
+    <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+    <style>
+        a { display: block; padding: 12px; margin-bottom: 8px; text-decoration: none; color: #fff; border-radius: 6px; }
+        a.active { background-color: #007bff; }
+        a:hover { background-color: #0a58ca; }
+    </style>
+</div>

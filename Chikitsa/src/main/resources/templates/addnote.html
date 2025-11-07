@@ -1,0 +1,75 @@
+<div th:fragment="content">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"/>
+
+    <style>
+        body {
+            background-color: #f6faff;
+        }
+        .required-error {
+            border: 2px solid red !important;
+        }
+        .card {
+            border-radius: 10px;
+        }
+    </style>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-5 col-md-7 col-sm-10 card shadow p-4 bg-white">
+
+            <h3 class="text-center mb-3">Add Note</h3>
+
+            <!-- Flash message -->
+            <div th:if="${message}" class="alert alert-success text-center">
+                <span th:text="${message}"></span>
+            </div>
+
+            <form id="noteForm" th:action="@{/saveNote}" th:object="${note}" method="post">
+
+                <div class="mb-3">
+                    <label>Therapeutic *</label>
+                    <input type="text"
+                           th:field="*{therapeutic}"
+                           class="form-control required-field"
+                           placeholder="Enter Therapeutic"/>
+                </div>
+
+                <div class="mb-3">
+                    <label>Proven Therapeutic *</label>
+                    <textarea th:field="*{provenTherapeutic}"
+                              rows="10"
+                              class="form-control required-field"
+                              placeholder="Enter Proven Therapeutic"></textarea>
+                </div>
+
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-primary px-4">Submit</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- JS validation similar to addPatient.html -->
+    <script>
+        document.getElementById("noteForm").addEventListener("submit", function (event) {
+            let isValid = true;
+
+            document.querySelectorAll(".required-field").forEach(field => {
+                if (!field.value || field.value.trim() === "") {
+                    field.classList.add("required-error");
+                    isValid = false;
+                } else {
+                    field.classList.remove("required-error");
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault();
+                alert("Please fill all required fields");
+            }
+        });
+    </script>
+
+</div>

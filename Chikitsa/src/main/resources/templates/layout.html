@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${pageTitle} ?: 'Clinic Dashboard'">Clinic Dashboard</title>
+</head>
+
+<body>
+
+    <div th:replace="fragments/navbar :: sidebar"></div>
+
+    <div class="content-area">
+        <div th:replace="${pageToLoad} :: content"></div>
+    </div>
+
+</body>
+</html>

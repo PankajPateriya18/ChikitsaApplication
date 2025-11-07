@@ -1,0 +1,161 @@
+<!-- fragments/navbar.html -->
+<div th:fragment="sidebar">
+
+    <style>
+        /* ----------- Desktop Sidebar ----------- */
+        .sidebar {
+            width: 230px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: #b7bda9;
+            padding-top: 20px;
+            color: #333;
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        /* Google-style logo */
+        .google-logo {
+            font-family: 'Product Sans', 'Poppins', sans-serif;
+            font-size: 26px;
+            font-weight: 900;
+            text-align: center;
+            letter-spacing: 1px;
+            margin: 10px 0;
+        }
+
+        .sidebar .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 5px 10px;
+            transition: background 0.3s ease-in-out;
+        }
+
+        .sidebar .nav-link.active {
+            background: #2d8cff;
+            color: white !important;
+        }
+
+        .content-area {
+            margin-left: 240px;
+            padding: 20px;
+            transition: margin-left 0.3s;
+        }
+
+        /* ----------- Mobile Navbar ----------- */
+        .mobile-header {
+            display: none;
+            background-color: #b7bda9;
+            color: white;
+            padding: 12px 16px;
+            font-weight: bold;
+            font-size: 22px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 999;
+        }
+
+        .hamburger {
+            font-size: 26px;
+            cursor: pointer;
+            float: right;
+        }
+
+        /* Sidebar hidden on mobile until hamburger clicked */
+		/* ✅ ONLY Mobile View (phones) */
+		@media (max-width: 767px) {
+		    .sidebar {
+		        transform: translateX(-100%); /* hide sidebar */
+		    }
+		
+		    .sidebar.active {
+		        transform: translateX(0); /* show on hamburger click */
+		    }
+		
+		    .content-area {
+		        margin-left: 0 !important;
+		        margin-top: 70px !important;
+		    }
+		
+		    .mobile-header {
+		        display: block;
+		    }
+		}
+
+    </style>
+
+
+    <!-- Mobile Top Header (Logo + Hamburger) -->
+    <div class="mobile-header">
+        CHIKITSA
+        <span class="hamburger" onclick="toggleSidebar()">☰</span>
+    </div>
+
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebarMenu">
+
+        <h1 class="google-logo">
+            <span style="color:#4285F4;">C</span>
+            <span style="color:#DB4437;">H</span>
+            <span style="color:#F4B400;">I</span>
+            <span style="color:#4285F4;">K</span>
+            <span style="color:#0F9D58;">I</span>
+            <span style="color:#DB4437;">T</span>
+            <span style="color:#F4B400;">S</span>
+            <span style="color:#4285F4;">A</span>
+        </h1>
+
+        <a class="nav-link"
+           th:classappend="${activePage == 'dashboard'} ? 'active'"
+           th:href="@{/dashboard}">
+            Dashboard
+        </a>
+
+        <a class="nav-link"
+           th:classappend="${activePage == 'patients'} ? 'active'"
+           th:href="@{/patients}">
+            Patients
+        </a>
+
+        <a class="nav-link"
+           th:classappend="${activePage == 'addpatient'} ? 'active'"
+           th:href="@{/addpatient}">
+            Add Patient
+        </a>
+
+        <a class="nav-link"
+           th:classappend="${activePage == 'notes'} ? 'active'"
+           th:href="@{/notes}">
+            Notes
+        </a>
+
+        <a class="nav-link"
+           th:classappend="${activePage == 'addnote'} ? 'active'"
+           th:href="@{/addnote}">
+            Add Note
+        </a>
+
+        <a class="nav-link btn btn-danger"
+           style="text-align: left;"
+           th:href="@{/logout}">
+            Logout
+        </a>
+
+    </div>
+
+
+    <!-- Toggle Script -->
+    <script>
+        function toggleSidebar() {
+            document.getElementById("sidebarMenu").classList.toggle("active");
+        }
+    </script>
+
+</div>

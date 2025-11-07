@@ -1,0 +1,242 @@
+<div th:fragment="content">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"/>
+
+    <style>
+        body {
+            background-color: #f6faff;
+        }
+        .card {
+            border-radius: 10px;
+        }
+        .required-error {
+            border: 2px solid red !important;
+        }
+        
+        /* Remove number input arrows */
+		input[type=number]::-webkit-inner-spin-button,
+		input[type=number]::-webkit-outer-spin-button {
+		    -webkit-appearance: none;
+		    margin: 0;
+		}
+		
+		input[type=number] {
+		    -moz-appearance: textfield;
+		}
+		
+	    .patient-table {
+	        width: 100%;
+	        table-layout: fixed; /* allows fixed width on specific columns */
+	    }
+	
+	    /* Fixing width of Download and Delete columns */
+	    .patient-table th:nth-child(3),
+	    .patient-table td:nth-child(3) {
+	        width: 120px; /* Download column */
+	        text-align: center;
+	    }
+	
+	    .patient-table th:nth-child(4),
+	    .patient-table td:nth-child(4) {
+	        width: 120px; /* Delete column */
+	        text-align: center;
+	    }
+	
+	    /* File name column automatically takes remaining space */
+	    .patient-table td:nth-child(2),
+	    .patient-table th:nth-child(2) {
+	        white-space: normal;  /* allow wrapping */
+	        word-break: break-word;
+	    }
+    </style>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-6 col-md-7 col-sm-10 card shadow p-4 bg-white">
+
+			<div class="d-flex justify-content-between align-items-center mb-4">
+			    <a href="/patients" class="btn btn-secondary px-4">← Back</a>
+			    <h3 class="mx-auto mb-0">Patient Update Page</h3>
+			    <span style="visibility:hidden;">.</span>
+			</div>
+
+            <!-- Flash Message -->
+            <div th:if="${message}" class="alert alert-success text-center">
+                <span th:text="${message}"></span>
+            </div>
+
+            <form id="updatePatientForm" th:action="@{/updatePatient}" th:object="${patient}" method="post" enctype="multipart/form-data">
+
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="mb-3">
+                    <label class="fw-semibold">Registration Number *</label>
+                    <input type="text" th:field="*{registrationNumber}"
+                           class="form-control"
+                           readonly/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-semibold">Full Name *</label>
+                    <input type="text" th:field="*{fullName}"
+                           class="form-control required-field"
+                           placeholder="Enter Full Name"/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-semibold">Father's Name *</label>
+                    <input type="text" th:field="*{fatherName}"
+                           class="form-control required-field"
+                           placeholder="Enter Father's Name"/>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Age *</label>
+                        <input type="number" th:field="*{age}"
+                               class="form-control required-field"
+                               placeholder="Age" min="1" max="100"/>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Sex *</label>
+                        <select th:field="*{sex}" class="form-select required-field">
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="fw-semibold">Religion *</label>
+                        <select th:field="*{religion}" class="form-select required-field">
+                            <option value="">Select</option>
+                            <option value="Hindu">Hindu</option>
+                            <option value="Muslim">Muslim</option>
+                            <option value="Sikh">Sikh</option>
+                            <option value="Christian">Christian</option>
+                            <option value="Parsi">Parsi</option>
+                            <option value="Tribe">Tribe</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-semibold">Diagnosis *</label>
+                    <textarea th:field="*{diagnosis}" rows="2"
+                              class="form-control required-field"
+                              placeholder="Enter Diagnosis"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-semibold">Mobile *</label>
+                    <div class="input-group">
+                        <span class="input-group-text">+91</span>
+                        <input type="number" th:field="*{mobile}" class="form-control required-field"
+                               minlength="10" maxlength="10"
+                               oninput="validateMobile(this)"
+                               placeholder="Enter Mobile Number"/>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-semibold">Email</label>
+                    <input type="email" th:field="*{email}"
+                           class="form-control"
+                           placeholder="Enter Email Address"/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-semibold">Address *</label>
+                    <textarea th:field="*{address}" rows="2"
+                              class="form-control required-field"
+                              placeholder="Enter Address"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Case Taking *</label>
+                    <textarea th:field="*{casetaking}" rows="4"
+                              class="form-control required-field"
+                              placeholder="Enter Case Taking"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Next Appointment *</label>
+                    <input type="text" th:field="*{nextAppointment}"
+                           class="form-control"
+                           placeholder="Enter Next Appointment"/>
+                </div>
+                
+                <div class="mb-3">
+				    <label for="files">Documents</label>
+                    <input type="file" class="form-control" name="files" multiple>
+				</div>
+                
+                <div class="mb-3 table-container mt-3">
+					<label for="files">Uploaded Documents</label>
+					<table border="1" class="table table-bordered table-hover patient-table mb-0">
+					    <thead>
+					    <tr>
+					        <th style="display:none;">ID</th>
+					        <th>File Name</th>
+					        <th>Download</th>
+					        <th>Delete</th>
+					    </tr>
+					    </thead>
+					
+					    <tbody>
+					    <tr th:each="file : ${files}">
+					        <td style="display:none;" th:text="${file.id}"></td>
+					        <td th:text="${file.fileName}"></td>
+					        <td><a class="btn btn-info btn-sm" th:href="@{|/patient/document/download/${file.id}|}">Download</a></td>
+                            <td><a class="btn btn-danger btn-sm" th:href="@{|/patient/document/delete/${patient.id}/${file.id}|}">Delete</a></td>
+					    </tr>
+					    </tbody>
+					</table>
+                </div>
+                <div class="col-md-4">
+				    <label class="fw-semibold">Date *</label>
+				    <input type="date"
+				           th:value="${#temporals.format(patient.date, 'yyyy-MM-dd')}"
+				           class="form-control"
+				           readonly />
+				</div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success px-4">Update</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- JS Validation -->
+    <script>
+        // Mobile length restriction
+        function validateMobile(input) {
+            if (input.value.length > 10) {
+                input.value = input.value.slice(0, 10);
+            }
+        }
+
+        // Required field validation on submit
+        document.getElementById("updatePatientForm").addEventListener("submit", function (event) {
+            let isValid = true;
+            document.querySelectorAll(".required-field").forEach(field => {
+                if (!field.value || field.value.trim() === "") {
+                    field.classList.add("required-error");
+                    isValid = false;
+                } else {
+                    field.classList.remove("required-error");
+                }
+            });
+            if (!isValid) {
+                event.preventDefault();
+                alert("Please fill all required fields");
+            }
+        });
+    </script>
+
+</div>
