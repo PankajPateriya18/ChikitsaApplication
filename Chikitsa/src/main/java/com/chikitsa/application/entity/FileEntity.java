@@ -20,7 +20,8 @@ public class FileEntity {
     private String registrationNumber;
 
     @Lob
-    @Column(columnDefinition = "LONGBLOB")
+//    @Column(columnDefinition = "LONGBLOB")
+    @Column(name = "data", columnDefinition = "BYTEA")
     private byte[] data;
 
     public FileEntity() { }

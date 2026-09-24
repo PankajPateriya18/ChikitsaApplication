@@ -143,8 +143,12 @@ public class PatientController {
             row.createCell(9).setCellValue(p.getMobile());
             row.createCell(10).setCellValue(p.getEmail());
             row.createCell(11).setCellValue(p.getCasetaking());
-            row.createCell(11).setCellValue(p.getNextAppointment());
-            row.createCell(12).setCellValue(p.getDate().toString());
+            row.createCell(12).setCellValue(p.getNextAppointment());
+            row.createCell(13).setCellValue(p.getDate().toString());
+        }
+        // Auto-size columns for better readability
+        for (int i = 0; i < columns.length; i++) {
+            sheet.autoSizeColumn(i);
         }
         workbook.write(response.getOutputStream());
         response.getOutputStream().flush();
@@ -246,8 +250,8 @@ public class PatientController {
 	public void exportPatientPdf(@PathVariable Long id, HttpServletResponse response) throws Exception {
 	    Patient patient = patientService.getPatientById(id);
 	    response.setContentType("application/pdf");
-	    response.setHeader("Content-Disposition", "attachment; filename=patient_" + patient.getId() + ".pdf");
-	    PatientPdfGenerator. generatePdf(response.getOutputStream(), patient);
+	    response.setHeader("Content-Disposition", "attachment; filename=Report : " + patient.getFullName() + " - " + patient.getRegistrationNumber() + ".pdf");
+	    PatientPdfGenerator.generatePdf(response.getOutputStream(), patient);
 	}
 	
     @GetMapping("/patient/document/download/{fileId}")

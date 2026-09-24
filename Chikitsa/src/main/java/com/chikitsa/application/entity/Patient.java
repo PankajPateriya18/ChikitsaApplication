@@ -1,16 +1,15 @@
 package com.chikitsa.application.entity;
 
 import java.time.LocalDate;
-import java.util.List;
 
-import jakarta.persistence.CascadeType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -58,7 +57,8 @@ public class Patient {
 	@Column(name = "email")
 	private String email;
 
-	@Lob
+//	@Lob
+	@JdbcTypeCode(SqlTypes.LONGVARCHAR)
 	@Column(name = "case_taking", columnDefinition = "TEXT")
 	private String casetaking;
 
@@ -189,15 +189,6 @@ public class Patient {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-
-
-//	public List<PatientDocument> getDocuments() {
-//		return documents;
-//	}
-//
-//	public void setDocuments(List<PatientDocument> documents) {
-//		this.documents = documents;
-//	}
 	
 	public String getNextAppointment() {
 		return nextAppointment;

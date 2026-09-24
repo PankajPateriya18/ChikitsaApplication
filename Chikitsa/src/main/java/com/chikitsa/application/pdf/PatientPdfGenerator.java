@@ -1,330 +1,311 @@
 package com.chikitsa.application.pdf;
 
-import java.io.ByteArrayInputStream;
+//import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Base64; // <-- Add this import
+
+//import java.nio.charset.StandardCharsets;
+//
+import org.springframework.core.io.ClassPathResource;
+
+import com.chikitsa.application.controller.PatientController;
+//
+import com.chikitsa.application.entity.Patient;
+import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+//import com.itextpdf.text.Document;
+//import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+//import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+//import java.io.OutputStream;
+//import java.nio.file.Paths;
+
+//--- PASTE ALL OF THESE IMPORTS AT THE TOP OF YOUR FILE ---
+import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+
+import java.io.ByteArrayInputStream; // <-- FIX for ByteArrayInputStream error
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-
-import org.springframework.core.io.ClassPathResource;
-
-import com.chikitsa.application.entity.Patient;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.tool.xml.XMLWorkerHelper;
-import java.nio.file.Paths;
+import java.util.Base64;
 
 public class PatientPdfGenerator {
 
-//    public static void generatePdf(OutputStream out, Patient p) throws Exception {
-//
-//        Document document = new Document(PageSize.A4, 40, 40, 120, 60); // margins
-//        PdfWriter writer = PdfWriter.getInstance(document, out);
-//
-//        writer.setPageEvent(new HeaderFooter());
-//
-//        document.open();
-//
-//        Font headerFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD);
-//        Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
-//        Font normalFont = new Font(Font.FontFamily.HELVETICA, 12);
-//
-//        // ✅ 1. CENTER HEADING
-//        Paragraph title = new Paragraph("Patient Report", headerFont);
-//        title.setAlignment(Element.ALIGN_CENTER);
-//        document.add(title);
-//        document.add(new Paragraph("\n---------------\n", boldFont));
-//
-//        // ✅ 2. PATIENT DETAILS
-//        document.add(new Paragraph("Registration No  : " + p.getRegistrationNumber(), normalFont));
-//        document.add(new Paragraph("Name             : " + p.getFullName() 
-//                + "   S/O " + p.getFatherName() 
-//                + "   Mob: " + p.getMobile(), normalFont));
-//
-//        document.add(new Paragraph("Age / Sex / Religion : " 
-//                + p.getAge() + " / " + p.getSex() + " / " + p.getReligion(), normalFont));
-//        document.add(new Paragraph("Address          : " + p.getAddress(), normalFont));
-//        document.add(new Paragraph("Diagnosis        : " + p.getDiagnosis(), normalFont));
-//        document.add(new Paragraph("Case Taking      : " + p.getCasetaking(), normalFont));
-//        document.add(new Paragraph("Next Appointment : " + p.getNextAppointment(), normalFont));
-//
-//        document.add(new Paragraph("\n\n"));
-//
-//        // ✅ 3. RX TABLE (medicine format)
-//        PdfPTable table = new PdfPTable(2);
-//        table.setWidthPercentage(100);
-//        table.setWidths(new float[]{1.5f, 3.5f});
-//
-//        table.addCell(getHeaderCell("Rx No."));
-//        table.addCell(getHeaderCell("Prescription Details"));
-//
-//        // Example — pull from patient entity if list exists
-//        table.addCell(getNormalCell("1"));
-//        table.addCell(getNormalCell("Rhus tox 1M / 5 doses — BD"));
-//
-//        table.addCell(getNormalCell("2"));
-//        table.addCell(getNormalCell("Phytum 30 — 1 dram BD"));
-//
-//        table.addCell(getNormalCell("3"));
-//        table.addCell(getNormalCell("Arnica Q ointment — External use"));
-//
-//        document.add(table);
-//
-//        document.add(new Paragraph("\n\n"));
-//
-//        // ✅ Signature + doctor information
-//        Paragraph doctor = new Paragraph("                            Dr. Pradeep Tiwari", boldFont);
-//        document.add(doctor);
-//
-//        Paragraph date = new Paragraph("Date: " + p.getDate()
-//                + "                     Mob: 8878547608", boldFont);
-//        document.add(date);
-//
-//        document.close();
-//    }
-
-//	public static void generatePdf(OutputStream out, Patient p) throws Exception {
-//	    Document document = new Document();
+	public static void generatePdf(OutputStream out, Patient patient) throws Exception {
+//	    Document document = new Document(PageSize.A4);
 //	    PdfWriter writer = PdfWriter.getInstance(document, out);
 //	    document.open();
-//	    // Example HTML with CSS styling
-//	    String html = prepareHtmlBodyForReport(p);
-//	    // Convert HTML+CSS to PDF
-//	    InputStream is = new ByteArrayInputStream(html.getBytes());
-//	    XMLWorkerHelper.getInstance().parseXHtml(writer, document, is, null, Charset.forName("UTF-8"));
-//	    document.close();
-//	}
-
-	public static void generatePdf(OutputStream out, Patient patient) throws Exception {
-
-	    Document document = new Document(PageSize.A4);
-	    PdfWriter writer = PdfWriter.getInstance(document, out);
-	    document.open();
-
-	    // Resolve logo image path (Spring Boot static folder)
-	    String imagePath = Paths.get("src/main/resources/static/images/chikitsa.png").toAbsolutePath().toString();
-
-	    String html = "<html>" +
-	            "<head>" +
-	            "<style>" +
-	            "body { font-family: Arial, sans-serif; font-size: 14pt; padding: 20px; }" +
-
-	            /* HEADER section */
-	            ".header { font-size: 14pt; padding-bottom: 10px; margin-bottom: 20px; }" +
-	            ".header-line { height: 3px; background: #000; margin-top: 6px; margin-bottom: 20px; }" +
-	            ".doctor-info { line-height: 1.0; font-size: 14pt; }" +
-	            ".logo-section { text-align: center; }" +
-	            ".logo-section img { height: 80px; }" +
-
-	            /* Patient Info Formatting */
-	            ".info-row { margin-bottom: 12px; font-size: 12pt; }" +
-	            ".patient-label { font-weight: bold; width: 160px; display: inline-block; }" +
-	            ".patient-value { font-style: italic; }" +
-
-	            /* Footer always at bottom */
-	            ".footer { text-align: center; background-color: #0066cc; color: #fff; padding: 5px 0; font-size: 10px; font-weight: 500; text-transform: uppercase; }" +
-                ".app-footer{ bottom:0; left:0; right:0; height: var; display:flex; align-items:center; justify-content: center; background: linear-gradient(0deg,#ffffff, #fafcfe); border-top: 1px solid rgba(0,0,0,0.06); z-index: 1000; font-size: 10px; color: var(--muted);}" + 
-	            ".dashed-line { border-top: 1px dashed #ccc; margin: 14px 0; }" +
-	            ".signature-line { border-top: 1px solid #000; padding-top: 5px; }" +
-	            "</style>" +
-	            "</head>" +
-	            "<body>" +
-
-	            "<div class='header'>" +
-	            "<table width='100%'>" +
-	            "<tr>" +
-	            "   <td width='57%' class='doctor-info'>" +
-	            "       <b>Dr. Pradeep Tiwari</b><br />" +
-	            "       Consulting Homeopath &amp; General Physician<br />" +
-	            "       B.H.M.S, M.D <br />" +
-	            "       Registration No. 26878 <br />" +
-	            "       Mob: +91 8878547608 <br />" + 
-	            "       Date: " + patient.getDate() +
-	            "   </td>" +
-	            "   <td width='30%' class='logo-section'>" +
-	            "       <img src='file:" + imagePath + "' />" +
-	            "       <div style='font-size: 12pt;'>FAMILY WELLNESS CLINIC</div>" +
-	            "   </td>" +
-	            "</tr>" +
-	            "</table>" +
-	            "<div class='header-line'></div>" +
-	            "</div>" +
-
-	            "<div class='info-row'><span class='patient-label'>Reg. No. :  </span><span class='patient-value'>" + patient.getRegistrationNumber() + "</span></div>" +
-	            "<div class='info-row'><span class='patient-label'>Name :  </span><span class='patient-value'>" + patient.getFullName() + "</span></div>" +
-	            "<div class='info-row'><span class='patient-label'>Father's Name :  </span><span class='patient-value'>" + patient.getFatherName() + "</span></div>" +
-	            "<div class='info-row'><span class='patient-label'>Age/Gender/Religion :  </span><span class='patient-value'>" + patient.getAge() + "/" + patient.getSex() + "/" + patient.getReligion() + "</span></div>" +
-	            "<div class='info-row'><span class='patient-label'>Address :  </span><span class='patient-value'>" + patient.getAddress() + "</span></div>" +
-	            "<div class='info-row'><span class='patient-label'>Diagnosis :  </span><span class='patient-value'>" + patient.getDiagnosis() + "</span></div>" +
-	            "<div class='info-row'><span class='patient-label'>Case Taking :  </span><span class='patient-value'>" + patient.getCasetaking() + "</span></div>" +
-	            "<div class='info-row'><span class='patient-label'>Next Appointment :  </span><span class='patient-value'>" + ((patient.getNextAppointment() == null) ? "" : patient.getNextAppointment())  + "</span></div>" 
-	            +
-//                "<footer class=\"app-footer\" role=\"contentinfo\">" + 
-//	            "<div class='dashed-line'></div>" +
-//				"<table width='100%' style='margin-top: 30px; font-size: 14pt;'>" +
-//				"    <tr>" +
-//				"        <td style='font-weight:bold;'>Date : <span class='patient-value'>" + patient.getDate() + "</span></td>" +
-//				"        <td style='text-align:right; font-weight:bold;'>Dr. Pradeep Tiwari</td>" +
-//				"    </tr>" +
-//				"</table>" +		
-//				"<div style='background:#0066cc; color:#fff; text-align:center; padding:6px; font-size:12pt; margin-top:10px;'>" +
-//				"    For A Better Mind, Body, &amp; Life." +
-//				"</div>" + 
-//				"</footer>"
-	            "</body></html>";
-
-	    
-//	    String html = 
-//	    		"<html>" +
-//	    		        "<head>" +
-//	    		        "<style>" +
-//	    		        "body { font-family: Arial, sans-serif; font-size: 10pt; padding: 20px; }" +
-//	    		        ".header { font-size: 10pt; padding-bottom: 10px; }" +
-//	    		        ".header-line { height: 3px; background: #000; margin-top: 6px; margin-bottom: 10px; }" +
-//	    		        ".doctor-info { font-weight: bold; line-height: 1.3; }" +
-//	    		        ".logo-section { text-align: center; }" +
-//	    		        ".logo-section img { height: 30px; }" +
-//	    		        ".patient-label { font-weight: bold; width: 120px; display: inline-block; }" +
-//	    		        ".patient-value { font-style: italic; }" +
-//	    		        ".dashed-line { border-top: 1px dashed #ccc; margin: 10px 0; }" +
-//	    		        ".signature-line { border-top: 1px solid #000; padding-top: 5px; }" +
-//	    		        ".footer { text-align:center; background:#0066cc; color:#fff; padding:3px; font-size:8pt; }" +
-//	    		        "</style>" +
-//	    		        "</head>" +
-//	    		        "<body>" +
-//
-//	    		        "<div class='header'>" +
-//	    		        "<table width='100%'>" +
-//	    		        "<tr>" +
-//	    		        "   <td width='45%' class='doctor-info'>" +
-//	    		        "       Dr. Pradeep Tiwari<br />" +
-//	    		        "       Consulting Homeopath &amp; General Physician<br />" +
-//	    		        "       B.H.M.S, D.N.H.E., C.G.O.<br />" +
-//	    		        "       Mob: +91 8878547608" +
-//	    		        "   </td>" +
-//	    		        "   <td width='10%' class='logo-section'>" +
-//	    		        "       <img src='file:" + imagePath + "' />" +
-//	    		        "       <div style='font-size: 6pt; color: #777;'>health care for sure</div>" +
-//	    		        "       <div style='font-size: 8pt;'>FAMILY WELLNESS CLINIC</div>" +
-//	    		        "   </td>" +
-//	    		        "</tr>" +
-//	    		        "</table>" +
-//	    		        "<div class='header-line'></div>" +
-//	    		        "</div>" +
-//
-//	    		        "<div>" +
-//	    		        "   <div><span class='patient-label'>Reg. No. :</span><span class='patient-value'>" + patient.getRegistrationNumber() + "</span></div>" +
-//	    		        "   <div><span class='patient-label'>Name :</span><span class='patient-value'>" + patient.getFullName() + "</span></div>" +
-//	    		        "   <div><span class='patient-label'>Father's Name :</span><span class='patient-value'>" + patient.getFatherName() + "</span></div>" +
-//	    		        "   <div><span class='patient-label'>Age/Gender/Religion :</span><span class='patient-value'>" + patient.getAge() + "/" + patient.getSex() + "/" + patient.getReligion() + "</span></div>" +
-//	    		        "   <div><span class='patient-label'>Address :</span><span class='patient-value'>" + patient.getAddress() + "</span></div>" +
-//	    		        "   <div><span class='patient-label'>Diagnosis :</span><span class='patient-value'>" + patient.getDiagnosis() + "</span></div>" +
-//	    		        "   <div><span class='patient-label'>Case Taking :</span><span class='patient-value'>" + patient.getCasetaking() + "</span></div>" +
-//	    		        "   <div><span class='patient-label'>Next Appointment :</span><span class='patient-value'>" + patient.getNextAppointment() + "</span></div>" +
-//	    		        "</div>" +
-//
-//	    		        "<div class='dashed-line'></div>" +
-//
-//	    		        "<div style='height:400px;'></div>" +
-//
-//	    		        "<div class='dashed-line'></div>" +
-//
-//	    		        "<table width='100%'>" +
-//	    		        "<tr>" +
-//	    		        "   <td width='25%'><span class='patient-label'>Date :</span><span class='patient-value'>" + patient.getDate() + "</span></td>" +
-//	    		        "   <td width='75%' style='text-align:right; font-weight:bold;'>" +
-//	    		        "       <div class='signature-line'>Dr. Pradeep Tiwari</div>" +
-//	    		        "   </td>" +
-//	    		        "</tr>" +
-//	    		        "</table>" +
-//
-//	    		        "<div class='footer'>For A Better Mind, Body, &amp; Life.</div>" +
-//
-//	    		        "</body></html>";
-
-//	    "<html>" +
+//	    String imagePath = Paths.get("src/main/resources/static/images/chikitsa.png").toAbsolutePath().toString();
+//	    String html = "<html>" +
 //	            "<head>" +
 //	            "<style>" +
-//	            "body { font-family: Arial, sans-serif; font-size: 10pt; padding: 20px; }" +
-//	            ".header { font-size: 10pt; padding-bottom: 10px; }" +
-//	            ".header-line { height: 3px; background: #000; margin-top: 6px; margin-bottom: 10px; }" +
-//	            ".doctor-info { font-weight: bold; line-height: 1.3; }" +
+//	            "body { font-family: Arial, sans-serif; font-size: 14pt; padding: 20px; }" +
+//	            ".header { font-size: 14pt; padding-bottom: 10px; margin-bottom: 20px; }" +
+//	            ".header-line { height: 3px; background: #000; margin-top: 6px; margin-bottom: 20px; }" +
+//	            ".doctor-info { line-height: 1.0; font-size: 14pt; }" +
 //	            ".logo-section { text-align: center; }" +
-//	            ".logo-section img { height: 30px; }" +
-//	            ".patient-label { font-weight: bold; width: 120px; display: inline-block; }" +
+//	            ".logo-section img { height: 80px; }" +
+//	            ".info-row { margin-bottom: 12px; font-size: 12pt; }" +
+//	            ".patient-label { font-weight: bold; width: 160px; display: inline-block; }" +
 //	            ".patient-value { font-style: italic; }" +
-//	            ".dashed-line { border-top: 1px dashed #ccc; margin: 10px 0; }" +
+//	            ".footer { text-align: center; background-color: #0066cc; color: #fff; padding: 5px 0; font-size: 10px; font-weight: 500; text-transform: uppercase; }" +
+//                ".app-footer{ bottom:0; left:0; right:0; height: var; display:flex; align-items:center; justify-content: center; background: linear-gradient(0deg,#ffffff, #fafcfe); border-top: 1px solid rgba(0,0,0,0.06); z-index: 1000; font-size: 10px; color: var(--muted);}" + 
+//	            ".dashed-line { border-top: 1px dashed #ccc; margin: 14px 0; }" +
 //	            ".signature-line { border-top: 1px solid #000; padding-top: 5px; }" +
-//	            ".footer { text-align:center; background:#0066cc; color:#fff; padding:3px; font-size:8pt; }" +
 //	            "</style>" +
 //	            "</head>" +
 //	            "<body>" +
-//
 //	            "<div class='header'>" +
 //	            "<table width='100%'>" +
 //	            "<tr>" +
-//	            "   <td width='45%' class='doctor-info'>" +
-//	            "       Dr.  Pradeep Tiwari<br>" +
-//	            "       Consulting Homeopath & General Physician<br>" +
-//	            "       B.H.M.S, D.N.H.E., C.G.O.<br>" +
-//	            "       Mob: +91 8878547608" +
+//	            "   <td width='57%' class='doctor-info'>" +
+//	            "       <b>Dr. Pradeep Tiwari</b><br />" +
+//	            "       Consulting Homeopath &amp; General Physician<br />" +
+//	            "       B.H.M.S, M.D <br />" +
+//	            "       Registration No. 26878 <br />" +
+//	            "       Mob: +91 8878547608 <br />" + 
+//	            "       Date: " + patient.getDate() +
 //	            "   </td>" +
-//	            "   <td width='10%' class='logo-section'>" +
-//	            "       <img src='file:" + imagePath + "'>" +
-//	            "       <div style='font-size: 6pt; color: #777;'>health care for sure</div>" +
-//	            "       <div style='font-size: 8pt;'>FAMILY WELLNESS CLINIC</div>" +
+//	            "   <td width='30%' class='logo-section'>" +
+//	            "       <img src='file:" + imagePath + "' />" +
+//	            "       <div style='font-size: 12pt;'>FAMILY WELLNESS CLINIC</div>" +
 //	            "   </td>" +
 //	            "</tr>" +
 //	            "</table>" +
 //	            "<div class='header-line'></div>" +
 //	            "</div>" +
-//
-//	            "<div>" +
-//	            "   <div><span class='patient-label'>Reg. No. :</span><span class='patient-value'>" + patient.getRegistrationNumber() + "</span></div>" +
-//	            "   <div><span class='patient-label'>Name :</span><span class='patient-value'>" + patient.getFullName() + "</span></div>" +
-//	            "   <div><span class='patient-label'>Father's Name :</span><span class='patient-value'>" + patient.getFatherName() + "</span></div>" +
-//	            "   <div><span class='patient-label'>Age/Gender/Religion :</span><span class='patient-value'>" + patient.getAge() + "/" + patient.getSex() + "/" + patient.getReligion() + "</span></div>" +
-//	            "   <div><span class='patient-label'>Address :</span><span class='patient-value'>" + patient.getAddress() + "</span></div>" +
-//	            "   <div><span class='patient-label'>Diagnosis :</span><span class='patient-value'>" + patient.getDiagnosis() + "</span></div>" +
-//	            "   <div><span class='patient-label'>Case Taking :</span><span class='patient-value'>" + patient.getCasetaking() + "</span></div>" +
-//	            "   <div><span class='patient-label'>Next Appointment :</span><span class='patient-value'>" + patient.getNextAppointment() + "</span></div>" +
-//	            "</div>" +
-//
-//	            "<div class='dashed-line'></div>" +
-//
-//	            "<div style='height:400px;'></div>" +
-//
-//	            "<div class='dashed-line'></div>" +
-//
-//	            "<table width='100%'>" +
-//	            "<tr>" +
-//	            "   <td width='25%'><span class='patient-label'>Date :</span><span class='patient-value'>" + patient.getDate() + "</span></td>" +
-//	            "   <td width='75%' style='text-align:right; font-weight:bold;'><p class='signature-line'>Dr. Pradeep Tiwari</p></td>" +
-//	            "</tr>" +
-//	            "</table>" +
-//
-//	            "<div class='footer'>For A Better Mind, Body, & Life.</div>" +
-//
-//	            "</body></html>";
+//	            "<div class='info-row'><span class='patient-label'>Reg. No. :  </span><span class='patient-value'>" + patient.getRegistrationNumber() + "</span></div>" +
+//	            "<div class='info-row'><span class='patient-label'>Name :  </span><span class='patient-value'>" + patient.getFullName() + "</span></div>" +
+//	            "<div class='info-row'><span class='patient-label'>Father's Name :  </span><span class='patient-value'>" + patient.getFatherName() + "</span></div>" +
+//	            "<div class='info-row'><span class='patient-label'>Age/Gender/Religion :  </span><span class='patient-value'>" + patient.getAge() + "/" + patient.getSex() + "/" + patient.getReligion() + "</span></div>" +
+//	            "<div class='info-row'><span class='patient-label'>Address :  </span><span class='patient-value'>" + patient.getAddress() + "</span></div>" +
+//	            "<div class='info-row'><span class='patient-label'>Diagnosis :  </span><span class='patient-value'>" + patient.getDiagnosis() + "</span></div>" +
+//	            "<div class='info-row'><span class='patient-label'>Case Taking :  </span><span class='patient-value'>" + patient.getCasetaking() + "</span></div>" +
+//	            "<div class='info-row'><span class='patient-label'>Next Appointment :  </span><span class='patient-value'>" + ((patient.getNextAppointment() == null) ? "" : patient.getNextAppointment())  + "</span></div>"  +        
+//	            "</body></html>";	    
+//	    InputStream is = new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
+//	    XMLWorkerHelper.getInstance().parseXHtml(writer, document, is, StandardCharsets.UTF_8);
+//	    document.close();
 
-	    InputStream is = new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
-	    XMLWorkerHelper.getInstance().parseXHtml(writer, document, is, StandardCharsets.UTF_8);
+		
+//		
+//        // 1. Initialize PDF Writer and Document
+//        PdfWriter writer = new PdfWriter(out);
+//        PdfDocument pdf = new PdfDocument(writer);
+//        pdf.setDefaultPageSize(PageSize.A4);
+//        Document document = new Document(pdf);
+//
+//        // 2. Prepare HTML content
+//        String imagePath = Paths.get("src/main/resources/static/images/chikitsa.png").toAbsolutePath().toString();
+//        
+//        // --- Using a StringBuilder for better readability and performance ---
+//        StringBuilder html = new StringBuilder();
+//        html.append("<html><head><style>")
+//            .append("body { font-family: Arial, sans-serif; font-size: 11pt; }")
+//            .append(".header-table, .info-table { width: 100%; border-collapse: collapse; }")
+//            .append(".header-line { height: 2px; background: #000; margin-top: 10px; margin-bottom: 20px; }")
+//            .append(".doctor-info { line-height: 1.2; font-size: 12pt; vertical-align: top; }")
+//            .append(".logo-section { text-align: center; vertical-align: top; }")
+//            .append(".logo-section img { height: 80px; }")
+//            .append(".info-row { padding-bottom: 10px; }")
+//            .append(".patient-label { font-weight: bold; width: 180px; display: inline-block; }")
+//            .append(".patient-value { }")
+//            .append("</style></head><body>")
+//            
+//            // --- Header Section ---
+//            .append("<table class='header-table'><tr>")
+//            .append("<td style='width: 60%;' class='doctor-info'>")
+//            .append("<b>Dr. Pradeep Tiwari</b><br />")
+//            .append("Consulting Homeopath &amp; General Physician<br />")
+//            .append("B.H.M.S, M.D <br />")
+//            .append("Registration No. 26878 <br />")
+//            .append("Mob: +91 8878547608 <br />")
+//            .append("Date: ").append(patient.getDate())
+//            .append("</td>")
+//            .append("<td style='width: 40%;' class='logo-section'>")
+//            .append("<img src='").append(imagePath).append("' />") // Ensure the image path is correct
+//            .append("<div style='font-size: 12pt;'>FAMILY WELLNESS CLINIC</div>")
+//            .append("</td>")
+//            .append("</tr></table>")
+//            .append("<div class='header-line'></div>")
+//
+//            // --- Patient Information Section ---
+//            .append("<div class='info-row'><span class='patient-label'>Reg. No. :</span><span class='patient-value'>").append(patient.getRegistrationNumber()).append("</span></div>")
+//            .append("<div class='info-row'><span class='patient-label'>Name :</span><span class='patient-value'>").append(patient.getFullName()).append("</span></div>")
+//            .append("<div class='info-row'><span class='patient-label'>Father's Name :</span><span class='patient-value'>").append(patient.getFatherName()).append("</span></div>")
+//            .append("<div class='info-row'><span class='patient-label'>Age/Gender/Religion :</span><span class='patient-value'>").append(patient.getAge() + "/" + patient.getSex() + "/" + patient.getReligion()).append("</span></div>")
+//            .append("<div class='info-row'><span class='patient-label'>Address :</span><span class='patient-value'>").append(patient.getAddress()).append("</span></div>")
+//            .append("<div class='info-row'><span class='patient-label'>Diagnosis :</span><span class='patient-value'>").append(patient.getDiagnosis()).append("</span></div>")
+//            
+//            // This is the field most likely to cause overflow
+//            .append("<div class='info-row'><span class='patient-label'>Case Taking :</span><span class='patient-value'>").append(patient.getCasetaking()).append("</span></div>")
+//            
+//            .append("<div class='info-row'><span class='patient-label'>Next Appointment :</span><span class='patient-value'>").append(patient.getNextAppointment() == null ? "" : patient.getNextAppointment()).append("</span></div>")
+//            
+//            .append("</body></html>");
+//
+//        // 3. Configure Converter Properties (important for resolving local file paths like images)
+//        ConverterProperties properties = new ConverterProperties();
+//        properties.setBaseUri(Paths.get("src/main/resources/static/").toAbsolutePath().toString());
+//
+//        // 4. Convert HTML to PDF
+//        HtmlConverter.convertToPdf(html.toString(), pdf, properties);
+//
+//        // Document is automatically closed by HtmlConverter
 
-	    document.close();
+//		 PdfWriter writer = new PdfWriter(out);
+//	        PdfDocument pdf = new PdfDocument(writer);
+//	        pdf.setDefaultPageSize(PageSize.A4);
+//	        Document document = new Document(pdf);
+//
+//	        // --- START OF CHANGE: Load image from classpath and encode ---
+////	        String imageResourcePath = "/static/images/chikitsa.png"; // Path from the classpath root
+//	        
+//	        // Use the class loader to get the resource as a stream
+////	        InputStream imageStream = PdfGenerator.class.getResourceAsStream(imageResourcePath);
+////	        if (imageStream == null) {
+////	            throw new IOException("Resource not found: " + imageResourcePath);
+////	        }
+////	        
+//	        // Read the stream into a byte array and encode it
+////	        byte[] imageBytes = imageStream.readAllBytes();
+////	        String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+////	        String imageSrcDataUri = "data:image/png;base64," + base64Image;
+//	        // --- END OF CHANGE ---
+//	        
+//	        // Load and encode the image (this part remains the same)
+//	        String imageResourcePath = "/static/images/chikitsa.png";
+//	        InputStream imageStream = PdfGenerator.class.getResourceAsStream(imageResourcePath);
+//	        if (imageStream == null) {
+//	            throw new IOException("Resource not found: " + imageResourcePath);
+//	        }
+//	        byte[] imageBytes = imageStream.readAllBytes();
+//	        String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+//	        String imageSrcDataUri = "data:image/png;base64," + base64Image;
+//
+//	        StringBuilder html = new StringBuilder();
+//	        html.append("<html><head><style>")
+//	            // ... (Your CSS remains unchanged) ...
+//	            .append("body { font-family: Arial, sans-serif; font-size: 11pt; }")
+//	            .append(".header-table, .info-table { width: 100%; border-collapse: collapse; }")
+//	            // ... etc. ...
+//	            .append("</style></head><body>")
+//	            
+//	            .append("<table class='header-table'><tr>")
+//	            .append("<td style='width: 60%;' class='doctor-info'>")
+//	            // ... (doctor info) ...
+//	            .append("</td>")
+//	            .append("<td style='width: 40%;' class='logo-section'>")
+//
+//	            // --- KEY CHANGE: Use the data URI in the image tag ---
+////	            .append("<img src='").append(imageSrcDataUri).append("' />")
+//	            .append("<img src='").append(imageSrcDataUri).append("' />")
+//	            .append("<div style='font-size: 12pt;'>FAMILY WELLNESS CLINIC</div>")
+//	            .append("</td>")
+//	            .append("</tr></table>")
+//	            .append("<div class='header-line'></div>")
+//
+//	            // ... (Rest of your HTML string remains unchanged) ...
+//	            .append("<div class='info-row'><span class='patient-label'>Reg. No. :</span><span class='patient-value'>").append(patient.getRegistrationNumber()).append("</span></div>")
+//	            // ... etc. ...
+//	            .append("</body></html>");
+//	        
+//	        // With the embedded image, you no longer need ConverterProperties for this purpose.
+////	        HtmlConverter.convertToPdf(html.toString(), pdf);
+//	        // --- START OF FIX ---
+//	        // Convert the final HTML string to an InputStream
+//	        InputStream htmlStream = new ByteArrayInputStream(html.toString().getBytes(StandardCharsets.UTF_8));
+//	        
+//	        // Now call the converter with the InputStream and the PdfDocument.
+//	        // This method signature is available in more versions of the library.
+//	        HtmlConverter.convertToPdf(htmlStream, pdf);
+//	        // --- END OF FIX ---
+		 PdfWriter writer = new PdfWriter(out);
+	        PdfDocument pdf = new PdfDocument(writer);
+	        pdf.setDefaultPageSize(PageSize.A4);
+	        Document document = new Document(pdf);
+
+	        // Load and encode the image
+	        String imageResourcePath = "/static/images/chikitsa.png";
+	        
+	        // --- FIX for 'PdfGenerator cannot be resolved' error ---
+	        // Replace 'YOUR_CLASS_NAME.class' with the name of your class.
+	        // For example, if your class is 'PdfService', use 'PdfService.class'.
+	        InputStream imageStream = PatientController.class.getResourceAsStream(imageResourcePath);
+
+	        if (imageStream == null) {
+	            throw new IOException("Resource not found: " + imageResourcePath + ". Ensure it's in src/main/resources/static/images/");
+	        }
+	        
+	        byte[] imageBytes = imageStream.readAllBytes();
+	        String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+	        String imageSrcDataUri = "data:image/png;base64," + base64Image;
+
+	        // Build the HTML string
+	        StringBuilder html = new StringBuilder();
+	        // (This is your full HTML string from before)
+	        html.append("<html><head><style>")
+	            .append("body { font-family: Arial, sans-serif; font-size: 14pt; padding: 20px; }") // etc...
+
+	            .append(".header { font-size: 14pt; padding-bottom: 10px; margin-bottom: 20px; }")
+	            .append(".header-line { height: 3px; background: #000; margin-top: 6px; margin-bottom: 20px; }")
+	            .append(".doctor-info { line-height: 1.0; font-size: 14pt; }")
+	            .append(".logo-section { text-align: right; vertical-align: top; }")
+	            .append(".logo-section img { height: 120px;}")
+	            .append(".info-row { margin-bottom: 12px; font-size: 12pt;}")
+	            .append(".patient-label { font-weight: bold; width: 160px; display: inline-block;")
+	            .append(".patient-value { font-style: italic; }")
+	            .append(".dashed-line { border-top: 1px dashed #ccc; margin: 14px 0; }")
+	            .append(".signature-line { border-top: 1px solid #000; padding-top: 5px;}")
+	            .append("</style></head><body>")
+	            .append("<table class='header-table'><tr>")
+	            .append("<td style='width: 70%;' class='doctor-info'>")
+	            .append("<b>Dr. Pradeep Tiwari</b><br />")
+	            .append("Consulting Homeopath &amp; General Physician<br />")
+	            .append("B.H.M.S, M.D <br />")
+	            .append("Registration No. 26878 <br />")
+	            .append("Mob: +91 8878547608 <br />")
+	            .append("Date: ").append(patient.getDate())
+	            .append("</td>")
+	            .append("<td style='width: 100%;' class='logo-section'>")
+	            .append("<img src='").append(imageSrcDataUri).append("' />")
+	            .append("</td>")
+	            .append("</tr></table>")
+	            .append("<div class='header-line'></div>")
+	            .append("<div class='info-row'><span class='patient-label'>Reg. No.            :  </span><span class='patient-value'>").append(patient.getRegistrationNumber()).append("</span></div>")
+	            .append("<div class='info-row'><span class='patient-label'>Name                :  </span><span class='patient-value'>").append(patient.getFullName()).append("</span></div>")
+	            .append("<div class='info-row'><span class='patient-label'>Father's Name       :  </span><span class='patient-value'>").append(patient.getFatherName()).append("</span></div>")
+	            .append("<div class='info-row'><span class='patient-label'>Age/Gender/Religion :  </span><span class='patient-value'>").append(patient.getAge() + "/" + patient.getSex() + "/" + patient.getReligion() ).append("</span></div>")
+	            .append("<div class='info-row'><span class='patient-label'>Address             :  </span><span class='patient-value'>").append(patient.getAddress()).append("</span></div>")
+	            .append("<div class='info-row'><span class='patient-label'>Diagnosis           :  </span><span class='patient-value'>").append(patient.getDiagnosis()).append("</span></div>")
+	            .append("<div class='info-row'><span class='patient-label'>Case Taking         :  </span><span class='patient-value'>").append(patient.getCasetaking()).append("</span></div>")
+	            .append("<div class='info-row'><span class='patient-label'>Next Appointment    :  </span><span class='patient-value'>").append(((patient.getNextAppointment() == null) ? "" : patient.getNextAppointment())).append("</span></div>")
+	            .append("</body></html>");
+
+	        // Convert HTML to PDF using an InputStream
+	        InputStream htmlStream = new ByteArrayInputStream(html.toString().getBytes(StandardCharsets.UTF_8));
+	        HtmlConverter.convertToPdf(htmlStream, pdf);
 	}
 	
     // Util for table cells
-    private static PdfPCell getHeaderCell(String text) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
-        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        cell.setPadding(5);
-        return cell;
-    }
+//    private static PdfPCell getHeaderCell(String text) {
+//        PdfPCell cell = new PdfPCell(new Phrase(text, new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
+//        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+//        cell.setPadding(5);
+//        return cell;
+//    }
 
     private static PdfPCell getNormalCell(String text) {
         PdfPCell cell = new PdfPCell(new Phrase(text, new Font(Font.FontFamily.HELVETICA, 12)));
